@@ -18,9 +18,31 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Create an empty commit
+    - name: Fetch AI contributors
       run: |
-        git commit --allow-empty -m "Automated empty commit to trigger update"
+        echo "Fetching AI-related contributors..."
+        contributors=(
+          "openai"
+          "cohere-ai"
+          "Anthropic"
+          "karpathy"
+          "fastai"
+          "GoogleResearch"
+          "huggingface"
+        )
+        echo "# Contributors" > CONTRIBUTORS.md
+        for contributor in "${contributors[@]}"; do
+          echo "- $contributor" >> CONTRIBUTORS.md
+        done
+
+    - name: Commit updated contributors list
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          git add CONTRIBUTORS.md
+          git commit -m "Update CONTRIBUTORS.md with popular AI-related contributors"
+        else
+          echo "No changes to commit."
+        fi
 
     - name: Push changes
       run: |
