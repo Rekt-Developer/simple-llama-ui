@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>test-builtin</title>
+  <link rel="icon" href="../img/chat.png" type="image/png">
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.19.4.css">
+  <script src="../js/chat_builtin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+</head>
+
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="https://code.jquery.com/qunit/qunit-2.19.4.js"></script>
+
+</body>
+<script>
+
+  QUnit.module("_calcTokenSize", function () {
+    QUnit.test("3つのメッセージの合計トークンサイズ", function (assert) {
+      const message0 = { role: 'system', content: 'abcdeアイウエオかきくけこ' };
+      const mesaage1 = { role: 'user', content: '1234567890' };
+      const mesaage2 = { role: 'assistant', content: 'アシスタントの答え' };
+      const messages = [message0, mesaage1, mesaage2];
+      assert.strictEqual(_calcTokenSize(messages), (6+2+15+1) + (4+2+10+1) + (9+2+9+1), "token size === 62");
+    });
+  });
+
+
+  QUnit.module("_removeMessage", function () {
+    QUnit.test("空っぽの場合、何もしない", function (assert) {
+      const limit = 8;
+      const messages = [];
+      _removeMessage(messages, limit)
+      assert.strictEqual(messages.length, 0, "messages is empty");
+    });
+
+    QUnit.test("メッセージが1個の場合、その1個を短くする", function (assert) {
+      const limit = (6+2+1) + 8;
+      const message0 = { role: 'system', content: 'abcdeアイウエオかきくけこ' };
+      const messages = [message0];
+      _removeMessage(messages, limit)
+      assert.strictEqual(messages.length, 1, "messages has 1 element");
+      assert.strictEqual(_calcTokenSize(messages), limit, "messages token size is 17");
+      assert.strictEqual(messages[0].content, 'abcdeアイウ', "message is shorten");
+    });
+
+    QUnit.test("メッセージが2個の場合、最初のメッセージを除去する", function (assert) {
+      const limit = (4+2+1) + 8;
+      const message0 = { role: 'user', content: 'abcdeアイウエオかきくけこ' };
+      const message1 = { role: 'assistant', content: 'ハロー' };
+      const messages = [message0, message1];
+      _removeMessage(messages, limit);
+      //console.log("====messages====", messages);
+      assert.strictEqual(messages.length, 1, "messages has 1 element");
+      assert.strictEqual(messages[0].content, 'ハロー', "2nd message is left");
+    });
+
+    QUnit.test("メッセージが2個で、最初がsystemの場合、systemは残して2番目を短くする", function (assert) {
+      const limit = (6+2+1) + (4+2+1) + 8;
+      const message0 = { role: 'system', content: 'abcde' };
+      const message1 = { role: 'user', content: 'ハローハロー' };
+      const messages = [message0, message1];
+      _removeMessage(messages, limit)
+      assert.strictEqual(messages.length, 2, "messages has 2 element");
+      assert.strictEqual(messages[0].role, 'system', "system message is left");
+      assert.strictEqual(messages[0].content, 'abcde', "system message is left");
+      assert.strictEqual(messages[1].role, 'user', "user message is left");
+      assert.strictEqual(messages[1].content, 'ハロー', "user message is shorten");
+    });
+
+
+  });
+
+  QUnit.module("_messageCompaction", function () {
+    QUnit.test("空っぽの場合、何もしない", function (assert) {
+      const limit = 8;
+      const messages = [];
+      _messageCompaction(messages, limit)
+      assert.strictEqual(messages.length, 0, "messages is empty");
+    });
+
+    QUnit.test("メッセージが3個の場合、最初2個のメッセージを除去、最後を短縮する", function (assert) {
+      const limit = (4+2+1) + 8;
+      const message0 = { role: 'user', content: 'abcdeアイウエオかきくけこ' };
+      const message1 = { role: 'assistant', content: 'ハロー' };
+      const message2 = { role: 'user', content: 'How are you?' };
+      const messages = [message0, message1, message2];
+      _messageCompaction(messages, limit)
+      assert.strictEqual(messages.length, 1, "messages has 1 element");
+      assert.strictEqual(messages[0].content, 'How are ', "3rd message is left, but shorten");
+    });
+  });
+
+
+  QUnit.module("_buildPromptFromSingleMessage", function () {
+    QUnit.test("build prompot from single message", function (assert) {
+      const message = { role: "user", content: "富士山の高さは？" };
+      const expected = "user: 富士山の高さは？";
+      const prompt = _buildPromptFromSingleMessage(message);
+      assert.equal(prompt, expected, "1つのメッセージからプロンプトを組み立てる");
+    });
+  });
+
+  QUnit.module("_buildPromptFromChatMessages", function () {
+    QUnit.test("build prompot from 2 messages", function (assert) {
+      const messages = [
+        { role: "user", content: "富士山の高さは？" },
+        { role: "assistant", content: "富士山の高さは3776メートルです。"},
+      ];
+      const expected = "user: 富士山の高さは？\nassistant: 富士山の高さは3776メートルです。";
+      const prompt = _buildPromptFromChatMessages(messages);
+      assert.equal(prompt, expected, "2つのメッセージからプロンプトが合成");
+    });
+
+    QUnit.test("build prompot from 4 messages", function (assert) {
+      const messages = [
+        { role: "user", content: "富士山の高さは？" },
+        { role: "assistant", content: "富士山の高さは3776メートルです。"},
+        { role: "user", content: "空が青い理由は？" },
+        { role: "assistant", content: "光が拡散するからです。"},
+      ];
+      const expected = "user: 富士山の高さは？\nassistant: 富士山の高さは3776メートルです。\nuser: 空が青い理由は？\nassistant: 光が拡散するからです。";
+      const prompt = _buildPromptFromChatMessages(messages);
+      assert.equal(prompt, expected, "2つのメッセージからプロンプトが合成");
+    });
+
+    QUnit.test("build prompot from empty messages", function (assert) {
+      const messages = [
+      ];
+      const expected = "";
+      const prompt = _buildPromptFromChatMessages(messages);
+      assert.equal(prompt, expected, "メッセージがない場合は、空文字列が返る");
+    });
+  });
+
+  QUnit.module("initBuiltinChat", function () {
+    QUnit.test("init builtin chat", async function (assert) {
+      const ctx = await initBuiltinChat();
+      assert.notEqual(ctx, null, "初期化成功");
+    });
+  });
+
+  QUnit.module("singleChatText", function () {
+    QUnit.test("simple single chat, no history", async function (assert) {
+      const ctx = await initBuiltinChat();
+      assert.notEqual(ctx, null, "初期化成功");
+      const countBefore = ctx.chat_messages.length;
+      const res = await singleChat("富士山の高さは？", ctx);
+      assert.notEqual(res, null, "応答が返ってきている");
+      assert.ok(res.includes('3776') || res.includes('3,776'), "富士山は3776メートル");
+      const countAfter = ctx.chat_messages.length;
+      assert.equal(countAfter, countBefore, "チャットメッセージの履歴が増えない");
+    });
+  });
+
+  QUnit.module("postChatText", function () {
+    QUnit.test("post chat and keep message history", async function (assert) {
+      const ctx = await initBuiltinChat();
+      assert.notEqual(ctx, null, "初期化成功");
+      const countBefore = ctx.chat_messages.length;
+      const res = await postChatText("富士山の高さは？", ctx);
+      assert.notEqual(res, null, "応答が返ってきている");
+      //console.log("=======res======", res);
+      assert.ok(res.includes('3776') || res.includes('3,776'), "富士山は3776メートル");
+      const countAfter = ctx.chat_messages.length;
+      assert.equal(countAfter, countBefore + 2, "チャットメッセージが2つ追加されている");
+    });
+  });
+
+  QUnit.module("clearChatHistory", function () {
+    QUnit.test("clear chat history", async function (assert) {
+      const ctx = await initBuiltinChat();
+      assert.notEqual(ctx, null, "初期化成功");
+      const countBefore = ctx.chat_messages.length;
+      const res = await postChatText("富士山の高さは？", ctx);
+      assert.notEqual(res, null, "応答が返ってきている");
+      assert.ok(res.includes('3776') || res.includes('3,776'), "富士山は3776メートル");
+      const countAfter = ctx.chat_messages.length;
+      assert.equal(countAfter, countBefore + 2, "チャットメッセージが2つ追加されている");
+
+      clearChatHistory(ctx);
+      const countAfterClear = ctx.chat_messages.length;
+      assert.equal(countAfterClear, 0, "チャットメッセージがクリアされている");
+    });
+  });
+
+  QUnit.module("singleChatStream", function () {
+    QUnit.test("stream single chat, no history", async function (assert) {
+      let streamText = '';
+      function handleSteam(text) {
+        //streamText += text;
+        streamText = text;
+      }
+
+      const ctx = await initBuiltinChat();
+      assert.notEqual(ctx, null, "初期化成功");
+      const countBefore = ctx.chat_messages.length;
+      const res = await singleChatStream("富士山の高さは？", ctx, handleSteam);
+      assert.notEqual(res, null, "応答が返ってきている");
+      assert.strictEqual(res, streamText, "stream summary and reponse is same");
+      //console.log("======res====", res);
+      assert.ok(res.includes('3776') || res.includes('3,776'), "富士山は3776メートル");
+      const countAfter = ctx.chat_messages.length;
+      assert.equal(countAfter, countBefore, "チャットメッセージの履歴が増えない");
+    });
+  });
+
+
+  QUnit.module("streamChatText", function () {
+    QUnit.test("stream chat and keep message history", async function (assert) {
+      let streamText = '';
+      function handleSteam(text) {
+        //streamText += text;
+        streamText = text;
+      }
+
+      const ctx = await initBuiltinChat();
+      assert.notEqual(ctx, null, "初期化成功");
+      const countBefore = ctx.chat_messages.length;
+      const res = await streamChatText("富士山の高さは？", ctx, handleSteam);
+      assert.notEqual(res, null, "応答が返ってきている");
+      assert.strictEqual(res, streamText, "stream summary and reponse is same");
+      assert.ok(res.includes('3776') || res.includes('3,776'), "富士山は3776メートル");
+      const countAfter = ctx.chat_messages.length;
+      assert.equal(countAfter, countBefore + 2, "チャットメッセージが2つ追加されている");
+    });
+  });
+
+</script>
+
+</html>
