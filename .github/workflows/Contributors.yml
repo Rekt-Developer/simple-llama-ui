@@ -1,0 +1,58 @@
+name: Safe Auto Commit and Update
+
+on:
+  schedule:
+    - cron: "0 */12 * * *" # Runs every 12 hours
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  auto-update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Configure Git
+      run: |
+        # Set Git user info for the actions bot
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Prepare Contributors List
+      run: |
+        # Define the list of AI-related contributors
+        contributors=(
+          "openai"
+          "cohere-ai"
+          "Anthropic"
+          "karpathy"
+          "fastai"
+          "GoogleResearch"
+          "huggingface"
+          "DeepMind"
+          "MicrosoftResearch"
+          "NVIDIA"
+          "TeslaAI"
+          "MetaAI"
+          "BerkeleyAI"
+          "StanfordAI"
+        )
+
+        # Create CONTRIBUTORS.md file with the list of contributors
+        echo "# Contributors" > CONTRIBUTORS.md
+        for contributor in "${contributors[@]}"; do
+          echo "- $contributor <${contributor}@users.noreply.github.com>" >> CONTRIBUTORS.md
+        done
+
+    - name: Check for changes
+      run: |
+        git diff --quiet || echo "Changes detected"
+
+    - name: Commit and Push changes
+      run: |
+        # Add changes if any were made to CONTRIBUTORS.md
+        git add CONTRIBUTORS.md
+        git diff --cached --quiet || git commit -m "Update contributors list"
+        # Push changes if a commit was made
+        git push origin main
