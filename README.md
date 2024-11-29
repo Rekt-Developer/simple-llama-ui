@@ -1,25 +1,25 @@
-# Simple AI 🤖
+# Simple Llama UI 🤖
 
-[![Vercel Deployment](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://simple-ai.vercel.app)
+[![Vercel Deployment](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://simple-llama-ui.vercel.app)
 [![Telegram Community](https://img.shields.io/badge/Chat-Telegram-blue?logo=telegram)](https://t.me/RektDevelopers)
-[![GitHub Stars](https://img.shields.io/github/stars/Rekt-Developer/simple-ai?style=social)](https://github.com/Rekt-Developer/simple-ai)
+[![GitHub Stars](https://img.shields.io/github/stars/Rekt-Developer/simple-llama-ui?style=social)](https://github.com/Rekt-Developer/simple-llama-ui)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 ## 🌟 Project Overview
 
-Simple AI is a comprehensive ChatGPT API-based chat application with streaming support. It provides a simple yet powerful interface for integrating AI chat functionality.
+Simple Llama UI is a comprehensive chat application utilizing AI language models with streaming support. It provides a simple yet powerful interface for integrating AI chat functionality.
 
 ## 🚀 Live Demo
 
-🔗 **Website:** [simple-ai.vercel.app](https://simple-ai.vercel.app)
+🔗 **Website:** [simple-llama-ui.vercel.app](https://simple-llama-ui.vercel.app)
 
 ## 💡 Features
 
-- ChatGPT API integration
-- Streaming and standard chat modes
-- Multiple AI model support
-- Extensible plugin architecture
-- Cross-platform compatibility
+- AI Language Model API Integration
+- Streaming and Standard Chat Modes
+- Extensible Plugin Architecture
+- Cross-Platform Compatibility
+- Flexible Configuration Options
 
 ## 🛠 Project Structure
 
@@ -39,14 +39,14 @@ async function streamChatText(text, ctx, chunkHandler, options);
 
 ### Prerequisites
 - Web server
-- OpenAI API key
+- API Key (OpenAI/Llama/Custom)
 - Node.js
 - npm or yarn
 
 ### Setup Steps
 1. Copy files to web server
 2. Copy `js/config.templete.js` to `js/config.js`
-3. Replace `API_KEY` with your OpenAI API key
+3. Replace `API_KEY` with your preferred AI model API key
 4. Customize `HEADER_ELEMENT` (optional)
 
 ### Access Methods
@@ -59,18 +59,34 @@ async function streamChatText(text, ctx, chunkHandler, options);
 
 ### ✅ Completed
 - UI Improvements
-- Streaming support
-- Basic error handling
-- Context management
+- Streaming Support
+- Basic Error Handling
+- Context Management
 
 ### 🚧 Ongoing Tasks
-- Message compaction algorithm
-- Token count display
-- Advanced error handling
+- Message Compaction Algorithm
+  - [x] Simple removal from start
+  - [x] Preserve system role
+  - [ ] Retain system role and first exchange
+  - [ ] Preserve high-information exchanges
+  - [ ] Develop information density assessment
+  - [ ] Summarize past interactions
+
+- Token Management
+  - [ ] Display token count
+  - [ ] Adjust token limits dynamically
+  - [ ] Handle context length constraints
+
+- Error Handling
+  - [x] Standardized error messages
+  - [x] Separate error role
+  - [ ] Improve user-friendly error communication
+
 - Refactoring
-  - Implement JSDoc comments
-  - Improve configuration flexibility
-  - Enhance token management
+  - [x] Add comments
+  - [ ] Implement JSDoc standards
+  - [ ] Configurable debug logging
+  - [ ] Enhance configuration flexibility
 
 ## 💰 Support the Project
 
