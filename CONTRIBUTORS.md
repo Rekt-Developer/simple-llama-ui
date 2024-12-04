@@ -1,15 +1,8 @@
 # Contributors
-- openai <openai@users.noreply.github.com>
-- cohere-ai <cohere-ai@users.noreply.github.com>
-- Anthropic <Anthropic@users.noreply.github.com>
-- karpathy <karpathy@users.noreply.github.com>
-- fastai <fastai@users.noreply.github.com>
-- GoogleResearch <GoogleResearch@users.noreply.github.com>
-- huggingface <huggingface@users.noreply.github.com>
-- DeepMind <DeepMind@users.noreply.github.com>
-- MicrosoftResearch <MicrosoftResearch@users.noreply.github.com>
-- NVIDIA <NVIDIA@users.noreply.github.com>
-- TeslaAI <TeslaAI@users.noreply.github.com>
-- MetaAI <MetaAI@users.noreply.github.com>
-- BerkeleyAI <BerkeleyAI@users.noreply.github.com>
-- StanfordAI <StanfordAI@users.noreply.github.com>
+- openai
+- cohere-ai
+- Anthropic
+- karpathy
+- fastai
+- GoogleResearch
+- huggingface
